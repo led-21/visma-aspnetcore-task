@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Data;
 
-public static class EmployeeEndpoints
+public static class EmployeesEndpoints
 {
     public static void MapEmployeeEndpoints(this IEndpointRouteBuilder route)
     {
