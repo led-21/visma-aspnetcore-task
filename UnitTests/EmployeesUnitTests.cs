@@ -101,7 +101,7 @@ namespace UnitTests
 
 
         [Fact]
-        public async Task CreateEmployeesFromMockDatabase()
+        public async Task CreateEmployeeInMockDatabase()
         {
             //Arrange
             EmployeeDTO employeeDto = new EmployeeDTO { FirstName = "Alice", LastName = "Smith", Birthdate = DateTime.Now.AddYears(-22), BossId = 1, CurrentSalary = 5000, EmploymentDate = DateTime.Now.AddYears(-1), HomeAddress = "123 Main St, City", Role = "Software Engineer" };
@@ -122,7 +122,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task UpdateEmployeesFromMockDatabase()
+        public async Task UpdateEmployeeFromMockDatabase()
         {
             var employeeToUpdate = _mockDatabase.Employees.Find(1);
             EmployeeDTO employeeDTO = new EmployeeDTO()
@@ -151,7 +151,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task DeleteEmployeesFromMockDatabase()
+        public async Task DeleteEmployeeFromMockDatabase()
         {
             //Before delete
             output.WriteLine("Before Delete Id 2");
