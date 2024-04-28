@@ -1,0 +1,6 @@
+@visma_aspnetcore_task_HostAddress = http://localhost:5233
+
+GET {{visma_aspnetcore_task_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
