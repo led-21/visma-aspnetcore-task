@@ -1,6 +1,65 @@
 @visma_aspnetcore_task_HostAddress = http://localhost:5233
 
-GET {{visma_aspnetcore_task_HostAddress}}/weatherforecast/
+GET {{visma_aspnetcore_task_HostAddress}}/employees
 Accept: application/json
+
+###
+
+GET {{visma_aspnetcore_task_HostAddress}}/employees/1
+Accept: application/json
+
+###
+
+GET {{visma_aspnetcore_task_HostAddress}}/employees/Carol/1988-01-01/2000-01-01
+Accept: application/json
+
+###
+
+GET {{visma_aspnetcore_task_HostAddress}}/employees/Software%20Engineer
+Accept: application/json
+
+###
+
+GET {{visma_aspnetcore_task_HostAddress}}/employees/boss/1
+Accept: application/json
+
+###
+
+POST {{visma_aspnetcore_task_HostAddress}}/employees/
+Content-Type: application/json
+
+{
+    "firstName": "New Employee",
+    "lastName": "Johnson",
+    "birthdate": "1985-09-20T00:00:00",
+    "employmentDate": "2018-08-05T00:00:00",
+    "bossId": 1,
+    "homeAddress": "456 Elm Ave, Town",
+    "currentSalary": 9000.0,
+    "role": "PM"
+ }
+
+###
+
+PUT {{visma_aspnetcore_task_HostAddress}}/employees?id=1
+Content-Type: application/json
+
+{
+    "firstName": "Carol",
+    "lastName": "Lee",
+    "birthdate": "1993-02-08T00:00:00",
+    "employmentDate": "2021-06-18T00:00:00",
+    "homeAddress": "789 Oak Rd, Village - New Address",
+    "currentSalary": 5000.0,
+    "role": "CEO"
+}
+
+###
+
+PUT {{visma_aspnetcore_task_HostAddress}}/employees/1/6000
+
+###
+
+DELETE {{visma_aspnetcore_task_HostAddress}}/employees?id=7
 
 ###
