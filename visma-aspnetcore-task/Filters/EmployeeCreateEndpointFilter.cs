@@ -13,7 +13,7 @@
         EndpointFilterDelegate next)
     {
         EmployeeDTO? employee = context.GetArgument<EmployeeDTO>(0);
-        
+
         List<string> errorList = new List<string>();
 
         if (employee.GetType().GetProperties().Any(x =>

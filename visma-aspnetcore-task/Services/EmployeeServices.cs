@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using visma_aspnetcore_task.Interfaces;
 
 namespace visma_aspnetcore_task.Services;

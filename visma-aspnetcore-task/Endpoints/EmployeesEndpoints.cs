@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using visma_aspnetcore_task.Interfaces;
-using visma_aspnetcore_task.Services;
+﻿using visma_aspnetcore_task.Interfaces;
 
 public static class EmployeesEndpoints
 {
