@@ -1,43 +1,42 @@
-﻿
-
-using System.Reflection;
-
-class EmployeeCreateEndPointFilter : IEndpointFilter
+﻿class EmployeeCreateEndPointFilter : IEndpointFilter
 {
     protected readonly ILogger Logger;
+    protected readonly EmployeeDatabase _database;
 
-    public EmployeeCreateEndPointFilter(ILoggerFactory logger)
+    public EmployeeCreateEndPointFilter(ILoggerFactory logger, EmployeeDatabase database)
     {
         Logger = logger.CreateLogger<EmployeeCreateEndPointFilter>();
+        _database = database;
     }
 
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context,
-          EndpointFilterDelegate next)
+        EndpointFilterDelegate next)
     {
-
         EmployeeDTO? employee = context.GetArgument<EmployeeDTO>(0);
-        EmployeeDatabase? database = context.GetArgument<EmployeeDatabase>(1);
+        
         List<string> errorList = new List<string>();
 
-        if (employee.GetType().GetProperties().Any(x => x.PropertyType.Name == "String" ? string.IsNullOrEmpty(x.GetValue(employee) as string) : x.GetValue(employee) == null && x.Name != "BossId"))
+        if (employee.GetType().GetProperties().Any(x =>
+                x.PropertyType.Name == "String"
+                    ? string.IsNullOrEmpty(x.GetValue(employee) as string)
+                    : x.GetValue(employee) == null && x.Name != "BossId"))
         {
             return TypedResults.BadRequest("All properties, except for Boss are required");
         }
 
         if (employee.Role.ToUpper() == "CEO")
         {
-            if (database.Employees.Any(x => x.Role.ToUpper() == "CEO")) 
+            if (_database.Employees.Any(x => x.Role.ToUpper() == "CEO"))
                 errorList.Add("There can be only 1 employee with CEO role");
 
-            if(employee.BossId != null)
-                 errorList.Add("CEO role has no boss");
+            if (employee.BossId != null)
+                errorList.Add("CEO role has no boss");
         }
 
         if (employee.BossId == null)
         {
             if (employee.Role.ToUpper() == "CEO")
             {
-                
             }
             else
             {
@@ -46,13 +45,13 @@ class EmployeeCreateEndPointFilter : IEndpointFilter
         }
         else
         {
-            if(database.Employees.Find(employee.BossId)==null)
+            if (_database.Employees.Find(employee.BossId) == null)
             {
                 errorList.Add("Boss Id not exist");
             }
         }
 
-        if(employee.FirstName.Length>50 || employee.LastName.Length >50)
+        if (employee.FirstName.Length > 50 || employee.LastName.Length > 50)
         {
             errorList.Add("FirstName and LastName cannot be longer than 50 characters");
         }
@@ -78,14 +77,14 @@ class EmployeeCreateEndPointFilter : IEndpointFilter
             errorList.Add("EmploymentDate cannot be a future date");
         }
 
-        if(employee.CurrentSalary<0)
+        if (employee.CurrentSalary < 0)
         {
             errorList.Add("Current salary must be non-negative");
         }
 
-        if(errorList.Count > 0)
+        if (errorList.Count > 0)
         {
-            Logger.LogError("Failed to create employee: \n"+string.Join('\n',errorList));
+            Logger.LogError("Failed to create employee: \n" + string.Join('\n', errorList));
             return Results.BadRequest(errorList);
         }
 

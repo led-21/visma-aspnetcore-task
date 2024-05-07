@@ -1,21 +1,23 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using UnitTests.Helpers;
+using visma_aspnetcore_task.Services;
 using Xunit.Abstractions;
 
 namespace UnitTests
 {
     public class EmployeesUnitTests
     {
+        private readonly EmployeeServices _employeeServices;
         private readonly EmployeeDatabase _mockDatabase;
         private readonly ITestOutputHelper output;
 
         public EmployeesUnitTests(ITestOutputHelper output)
         {
-
             this.output = output;
-
+            
             //Arrange
             _mockDatabase = new MockDb().CreateDbContext();
+            _employeeServices = new(_mockDatabase);
 
             Employee employeeCEO = new Employee { FirstName = "Carol", LastName = "Lee", Birthdate = new DateTime(1993, 2, 8), Boss = null, BossId = null, CurrentSalary = 5000, EmploymentDate = new DateTime(2021, 6, 18), HomeAddress = "789 Oak Rd, Village", Role = "CEO" };
 
@@ -40,7 +42,7 @@ namespace UnitTests
         public async Task GetAllEmployeesFromMockDatabaseReturnResultsOk()
         {
             //Act
-            var result = await EmployeesEndpoints.GetAllEmployee(_mockDatabase);
+            var result = await EmployeesEndpoints.GetAllEmployee(_employeeServices);
 
             //Assert
             Assert.IsType<Ok<List<Employee>>>(result);
@@ -59,7 +61,7 @@ namespace UnitTests
         public async Task GetEmployeeByIdFromMockDatabaseReturnResultsOk(int id)
         {
             //Act
-            var result = await EmployeesEndpoints.GetEmployeeById(id, _mockDatabase);
+            var result = await EmployeesEndpoints.GetEmployeeById(id, _employeeServices);
 
             //Assert
             Assert.IsType<Ok<Employee>>(result);
@@ -73,7 +75,7 @@ namespace UnitTests
         public async Task GetEmployeesByNameAndBithdateIntervalFromMockDatabaseReturnResultsOk()
         {
             //Act
-            var result = await EmployeesEndpoints.GetEmployeeByNameAndBithdateInterval("Gabi", DateTime.Now.AddYears(-20), DateTime.Now, _mockDatabase);
+            var result = await EmployeesEndpoints.GetEmployeeByNameAndBithdateInterval("Gabi", DateTime.Now.AddYears(-20), DateTime.Now, _employeeServices);
 
             //Assert
             Assert.IsType<Ok<List<Employee>>>(result);
@@ -83,7 +85,7 @@ namespace UnitTests
         public async Task GetEmployeesByRoleFromMockDatabaseReturnNotFound()
         {
             //Act
-            var result = await EmployeesEndpoints.GetEmployeeCountAverageByRole("MasterChef", _mockDatabase);
+            var result = await EmployeesEndpoints.GetEmployeeCountAverageByRole("MasterChef", _employeeServices);
 
             //Assert
             Assert.IsAssignableFrom<NotFound<string>>(result);
@@ -93,7 +95,7 @@ namespace UnitTests
         public async Task GetEmployeesByBossIdFromMockDatabaseReturnResultsOk()
         {
             //Act
-            var result = await EmployeesEndpoints.GetAllEmployeeByBossId(1, _mockDatabase);
+            var result = await EmployeesEndpoints.GetAllEmployeeByBossId(1, _employeeServices);
 
             //Assert
             Assert.IsType<Ok<List<Employee>>>(result);
@@ -107,7 +109,7 @@ namespace UnitTests
             EmployeeDTO employeeDto = new EmployeeDTO { FirstName = "Alice", LastName = "Smith", Birthdate = DateTime.Now.AddYears(-22), BossId = 1, CurrentSalary = 5000, EmploymentDate = DateTime.Now.AddYears(-1), HomeAddress = "123 Main St, City", Role = "Software Engineer" };
 
             //Act
-            var result = await EmployeesEndpoints.AddEmployee(employeeDto, _mockDatabase);
+            var result = await EmployeesEndpoints.AddEmployee(employeeDto, _employeeServices);
 
             //Assert
             Assert.IsType<Created<Employee>>(result);
@@ -137,7 +139,7 @@ namespace UnitTests
             };
 
             //Act
-            var result = await EmployeesEndpoints.UpdateEmployee(employeeToUpdate.Id, employeeDTO, _mockDatabase);
+            var result = await EmployeesEndpoints.UpdateEmployee(employeeToUpdate.Id, employeeDTO, _employeeServices);
 
             //Assert
             Assert.IsType<NoContent>(result);
@@ -161,7 +163,7 @@ namespace UnitTests
             }
 
             //Act
-            var result = await EmployeesEndpoints.DeleteEmployee(2, _mockDatabase);
+            var result = await EmployeesEndpoints.DeleteEmployee(2, _employeeServices);
 
             //Assert
             Assert.IsType<NoContent>(result);

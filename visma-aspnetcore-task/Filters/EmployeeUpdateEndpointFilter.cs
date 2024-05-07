@@ -1,12 +1,13 @@
 ﻿using System.Reflection;
-
 class EmployeeUpdateEndpointFilter : IEndpointFilter
 {
     protected readonly ILogger Logger;
+    protected readonly EmployeeDatabase _database;
 
-    public EmployeeUpdateEndpointFilter(ILoggerFactory logger)
+    public EmployeeUpdateEndpointFilter(ILoggerFactory logger, EmployeeDatabase database)
     {
         Logger = logger.CreateLogger<EmployeeCreateEndPointFilter>();
+        _database = database;
     }
 
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context,
@@ -15,7 +16,6 @@ class EmployeeUpdateEndpointFilter : IEndpointFilter
 
         int _id = context.GetArgument<int>(0);
         EmployeeDTO? employee = context.GetArgument<EmployeeDTO>(1);
-        EmployeeDatabase? database = context.GetArgument<EmployeeDatabase>(2);
         List<string> errorList = new List<string>();
 
         if (employee.GetType().GetProperties().Any(x => x.PropertyType.Name == "String" ? string.IsNullOrEmpty(x.GetValue(employee) as string) : x.GetValue(employee) == null && x.Name != "BossId"))
@@ -25,7 +25,7 @@ class EmployeeUpdateEndpointFilter : IEndpointFilter
 
         if (employee.Role.ToUpper() == "CEO")
         {
-            if (database.Employees.Any(x => x.Role.ToUpper() == "CEO" && x.Id != _id))
+            if (_database.Employees.Any(x => x.Role.ToUpper() == "CEO" && x.Id != _id))
                 errorList.Add("There can be only 1 employee with CEO role");
 
             if (employee.BossId != null)
@@ -45,7 +45,7 @@ class EmployeeUpdateEndpointFilter : IEndpointFilter
         }
         else
         {
-            if (!(database.Employees.Find(employee.BossId) is Employee employeeBoss))
+            if (!(_database.Employees.Find(employee.BossId) is Employee employeeBoss))
             {
                 errorList.Add("Boss Id not exist");
             }
