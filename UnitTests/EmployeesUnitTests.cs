@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using UnitTests.Helpers;
 using visma_aspnetcore_task.Services;
 using Xunit.Abstractions;
@@ -13,20 +16,36 @@ namespace UnitTests
 
         public EmployeesUnitTests(ITestOutputHelper output)
         {
+            //Test Output
             this.output = output;
+            
+            //Memory Cache
+            var services = new ServiceCollection();
+            services.AddMemoryCache();
+            var serviceProvider = services.BuildServiceProvider();
+            var memoryCache = serviceProvider.GetService<IMemoryCache>();
             
             //Arrange
             _mockDatabase = new MockDb().CreateDbContext();
-            _employeeServices = new(_mockDatabase);
+            _employeeServices = new(_mockDatabase, memoryCache);
 
-            Employee employeeCEO = new Employee { FirstName = "Carol", LastName = "Lee", Birthdate = new DateTime(1993, 2, 8), Boss = null, BossId = null, CurrentSalary = 5000, EmploymentDate = new DateTime(2021, 6, 18), HomeAddress = "789 Oak Rd, Village", Role = "CEO" };
+            Employee employeeCEO = new Employee
+            {
+                FirstName = "Carol", LastName = "Lee", Birthdate = new DateTime(1993, 2, 8), Boss = null, BossId = null,
+                CurrentSalary = 5000, EmploymentDate = new DateTime(2021, 6, 18), HomeAddress = "789 Oak Rd, Village",
+                Role = "CEO"
+            };
 
             _mockDatabase.Employees.Add(employeeCEO);
 
-            _mockDatabase.Employees.Add(new Employee { FirstName = "Bob", LastName = "Johnson", Birthdate = new DateTime(1985, 9, 20), Boss = employeeCEO, BossId = employeeCEO.Id, CurrentSalary = 3000, EmploymentDate = new DateTime(2023, 8, 5), HomeAddress = "456 Elm Ave, Town", Role = "Software Engineer" });
+            _mockDatabase.Employees.Add(new Employee
+            {
+                FirstName = "Bob", LastName = "Johnson", Birthdate = new DateTime(1985, 9, 20), Boss = employeeCEO,
+                BossId = employeeCEO.Id, CurrentSalary = 3000, EmploymentDate = new DateTime(2023, 8, 5),
+                HomeAddress = "456 Elm Ave, Town", Role = "Software Engineer"
+            });
 
             _mockDatabase.SaveChanges();
-
         }
 
         [Fact]
@@ -75,7 +94,8 @@ namespace UnitTests
         public async Task GetEmployeesByNameAndBithdateIntervalFromMockDatabaseReturnResultsOk()
         {
             //Act
-            var result = await EmployeesEndpoints.GetEmployeeByNameAndBithdateInterval("Gabi", DateTime.Now.AddYears(-20), DateTime.Now, _employeeServices);
+            var result = await EmployeesEndpoints.GetEmployeeByNameAndBithdateInterval("Gabi",
+                DateTime.Now.AddYears(-20), DateTime.Now, _employeeServices);
 
             //Assert
             Assert.IsType<Ok<List<Employee>>>(result);
@@ -106,7 +126,12 @@ namespace UnitTests
         public async Task CreateEmployeeInMockDatabase()
         {
             //Arrange
-            EmployeeDTO employeeDto = new EmployeeDTO { FirstName = "Alice", LastName = "Smith", Birthdate = DateTime.Now.AddYears(-22), BossId = 1, CurrentSalary = 5000, EmploymentDate = DateTime.Now.AddYears(-1), HomeAddress = "123 Main St, City", Role = "Software Engineer" };
+            EmployeeDTO employeeDto = new EmployeeDTO
+            {
+                FirstName = "Alice", LastName = "Smith", Birthdate = DateTime.Now.AddYears(-22), BossId = 1,
+                CurrentSalary = 5000, EmploymentDate = DateTime.Now.AddYears(-1), HomeAddress = "123 Main St, City",
+                Role = "Software Engineer"
+            };
 
             //Act
             var result = await EmployeesEndpoints.AddEmployee(employeeDto, _employeeServices);
@@ -118,9 +143,9 @@ namespace UnitTests
             output.WriteLine("Employee List");
             foreach (var employee in _mockDatabase.Employees.ToList())
             {
-                output.WriteLine("Id: {0}, Name: {1} {2}, Address: {3}", employee.Id, employee.FirstName, employee.LastName, employee.HomeAddress);
+                output.WriteLine("Id: {0}, Name: {1} {2}, Address: {3}", employee.Id, employee.FirstName,
+                    employee.LastName, employee.HomeAddress);
             }
-
         }
 
         [Fact]
@@ -148,7 +173,8 @@ namespace UnitTests
             output.WriteLine("Employee List");
             foreach (var employee in _mockDatabase.Employees.ToList())
             {
-                output.WriteLine("Id: {0}, Name: {1}, Address: {2}", employee.Id, employee.FirstName, employee.HomeAddress);
+                output.WriteLine("Id: {0}, Name: {1}, Address: {2}", employee.Id, employee.FirstName,
+                    employee.HomeAddress);
             }
         }
 
@@ -175,6 +201,5 @@ namespace UnitTests
                 output.WriteLine("Id: {0}, Name: {1} {2}", employee.Id, employee.FirstName, employee.LastName);
             }
         }
-
     }
 }

@@ -1,20 +1,46 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using visma_aspnetcore_task.Interfaces;
 
 namespace visma_aspnetcore_task.Services;
 
-public class EmployeeServices(EmployeeDatabase database) : IEmployeeServices
+public class EmployeeServices(EmployeeDatabase database, IMemoryCache cache) : IEmployeeServices
 {
+    private MemoryCacheEntryOptions cacheEntryOptions = new MemoryCacheEntryOptions()
+        .SetSlidingExpiration(TimeSpan.FromSeconds(10))
+        .SetAbsoluteExpiration(TimeSpan.FromSeconds(60))
+        .SetPriority(CacheItemPriority.Normal);
+
     public async Task<IResult> GetAllEmployeeAsync()
     {
+        if (cache.TryGetValue("employeeList", out List<Employee> employeeCache))
+        {
+            return Results.Ok(employeeCache);
+        }
+
         var employees = await database.Employees.ToListAsync();
+
+        cache.Set("employeeList", employees, cacheEntryOptions);
+
         return Results.Ok(employees);
     }
 
     public async Task<IResult> GetEmployeeByIdAsync(int id)
     {
-        Employee? employee = (await database.Employees.ToListAsync()).Find(x => x.Id == id);
+        Employee employee;
+
+        if (cache.TryGetValue("employeeList", out List<Employee> employeeCache))
+        {
+            employee = employeeCache.Find(x => x.Id == id);
+        }
+        else
+        {
+            var employees = await database.Employees.ToListAsync();
+            employee = employees.Find(x => x.Id == id);
+
+            cache.Set("employeeList", employees, cacheEntryOptions);
+        }
 
         if (employee == null)
             return TypedResults.NotFound("Employee id not exist.");
